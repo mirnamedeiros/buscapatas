@@ -17,7 +17,7 @@ class UsuarioModel {
   UsuarioModel.id(this.id);
 
   UsuarioModel.emailSenha(this.email, this.senha);
-
+  
   factory UsuarioModel.fromJson(Map<String, dynamic> json) {
     return UsuarioModel(
         id: json["id"],
@@ -34,4 +34,34 @@ class UsuarioModel {
         "senha": senha,
         "telefone": telefone,
       };
+
+  UsuarioModel copy({
+    int? id,
+    String? nome,
+    String? email,
+    String? senha,
+    String? telefone,
+  }) =>
+      UsuarioModel(
+        id: id ?? this.id,
+        nome: nome ?? this.nome,
+        email: email ?? this.email,
+        senha: senha ?? this.senha,
+        telefone: telefone ?? this.telefone,
+      );
+
+      //Refatorar para o método completo para salvar usuário ficar aqui, e não só a URL
+  static String getUrlSalvarUsuario(){
+    return "http://buscapatasbackend-env-1.eba-buvmp5kg.sa-east-1.elasticbeanstalk.com/users";
+  }
+//Refatorar para o método completo para pesquisar usuário por email ficar aqui, e não só a URL
+  static String getUrlFindByEmail(var email){
+    return "http://buscapatasbackend-env-1.eba-buvmp5kg.sa-east-1.elasticbeanstalk.com/findbyemail?email=${email}";
+  }
+
+  //Refatorar para o método completo para verificar usuário cadastrado ficar aqui, e não só a URL
+  static String getUrlVerificarUsuarioAutorizado(var email, var senha){
+    return "http://buscapatasbackend-env-1.eba-buvmp5kg.sa-east-1.elasticbeanstalk.com/usuarioautorizado?email=${email}&senha=${senha}";
+  }
+
 }

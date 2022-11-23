@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:buscapatas/home.dart';
+import 'package:buscapatas/listagens/lista-posts-avistados.dart';
+import 'package:buscapatas/listagens/lista-posts-perdidos.dart';
+
+import '../perfil_usuario.dart';
 
 class BuscapatasNavBar extends StatefulWidget {
   const BuscapatasNavBar({super.key, required this.selectedIndex});
@@ -18,6 +22,10 @@ class BuscapatasNavBarState extends State<BuscapatasNavBar> {
       switch (index) {
         case 0:
           return _home();
+        case 1: return _listarAnimaisPerdidos();
+        case 2: return _listarAnimaisAvistados();
+        case 3:
+          return _visualizarPerfil();
         default:
       }
     });
@@ -31,17 +39,47 @@ class BuscapatasNavBarState extends State<BuscapatasNavBar> {
     );
   }
 
+  void _visualizarPerfil() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => VisualizarPerfil(title: "Perfil")),
+    );
+  }
+
+  void _listarAnimaisAvistados() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ListaPostsAvistados(title: "Animais avistados")),
+    );
+  }
+
+  void _listarAnimaisPerdidos() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ListaPostsPerdidos(title: "Animais avistados")),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Página inicial',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          label: 'Atividade',
+          icon: Icon(Icons.search),
+          label: 'Animais perdidos',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: 'Animais avistados',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),

@@ -11,26 +11,27 @@ import 'package:buscapatas/componentes-interface/estilo.dart' as estilo;
 import 'package:buscapatas/utils/localizacao.dart' as localizacao;
 import 'package:buscapatas/utils/usuario_logado.dart' as usuarioSessao;
 
-class CadastroPostAvistado extends StatefulWidget {
-  const CadastroPostAvistado({super.key, required this.title});
+class CadastroPostPerdido extends StatefulWidget {
+  const CadastroPostPerdido({super.key, required this.title});
 
   final String title;
 
   @override
-  State<CadastroPostAvistado> createState() => _CadastroPostAvistadoState();
+  State<CadastroPostPerdido> createState() => _CadastroPostPerdidoState();
 }
 
-class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
+class _CadastroPostPerdidoState extends State<CadastroPostPerdido> {
   final _formKey = GlobalKey<FormState>();
-
+  TextEditingController nomeController = TextEditingController();
   TextEditingController outrasinformacoesController = TextEditingController();
+  TextEditingController orientacoesController = TextEditingController();
+  TextEditingController recompensaController = TextEditingController();
+  String _mensagemValidacao = "";
 
   bool valorColeiraMarcado = false;
-  bool valorLarTemporario = false;
   String valorSexoMarcado = "";
   String? valorEspecieSelecionado;
   String? valorRacaSelecionado;
-  String _mensagemValidacao = "";
 
   List<dynamic> listaEspecies = [];
   List<dynamic> listaRacas = [];
@@ -58,7 +59,7 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Cadastro de Animal Avistado"),
+          title: const Text("Cadastro de Animal Perdido"),
           centerTitle: true,
           foregroundColor: Colors.white,
           backgroundColor: estilo.corprimaria),
@@ -69,6 +70,8 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                campoInput("Nome do animal", nomeController, TextInputType.name,
+                    "Nome ou apelido"),
                 campoSelect("Espécie", valorEspecieSelecionado, listaEspecies,
                     selecionarEspecie),
                 campoSelect(
@@ -133,7 +136,7 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
                   ),
                 ),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 10.0)),
-                Text("Estava de coleira?",
+                Text("Estava de coleira:",
                     style: TextStyle(color: estilo.corprimaria, fontSize: 16)),
                 RadioListTile(
                   visualDensity: const VisualDensity(horizontal: -4.0),
@@ -160,37 +163,6 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
                   onChanged: (value) {
                     setState(() {
                       valorColeiraMarcado = value!;
-                    });
-                  },
-                ),
-                const Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 10.0)),
-                Text("Deu lar temporário?",
-                    style: TextStyle(color: estilo.corprimaria, fontSize: 16)),
-                RadioListTile(
-                  visualDensity: const VisualDensity(horizontal: -4.0),
-                  dense: true,
-                  title: const Text("Sim",
-                      style:
-                          TextStyle(color: estilo.corprimaria, fontSize: 16)),
-                  value: true,
-                  groupValue: valorLarTemporario,
-                  onChanged: (value) {
-                    setState(() {
-                      valorLarTemporario = value!;
-                    });
-                  },
-                ),
-                RadioListTile(
-                  visualDensity: const VisualDensity(horizontal: -4.0),
-                  dense: true,
-                  title: const Text("Não",
-                      style:
-                          TextStyle(color: estilo.corprimaria, fontSize: 16)),
-                  value: false,
-                  groupValue: valorLarTemporario,
-                  onChanged: (value) {
-                    setState(() {
-                      valorLarTemporario = value!;
                     });
                   },
                 ),
@@ -199,6 +171,13 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
                     outrasinformacoesController,
                     TextInputType.multiline,
                     "Outras características para ajudar na identificação do animal"),
+                campoInputLongo(
+                    "Orientações gerais",
+                    orientacoesController,
+                    TextInputType.multiline,
+                    "Temperamento do animal e outras instruções importantes"),
+                campoInput("Recompensa", recompensaController,
+                    TextInputType.number, "R\$ 0"),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 10)),
                 Text(
                   _mensagemValidacao,
@@ -222,11 +201,13 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
                       ),
                     )),
                 const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 10)),
+
               ],
             )),
       ),
     );
   }
+
 
 
   void cargaInicialBD() async {
@@ -249,8 +230,9 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
       valorRacaSelecionado = null;
     });
 
-    List<dynamic> racasTemp = await RacaModel.getRacasByEspecie(valorEspecieSelecionado);
-    
+    List<dynamic> racasTemp =
+        await RacaModel.getRacasByEspecie(valorEspecieSelecionado);
+
     setState(() {
       listaRacas.clear();
       listaRacas = racasTemp;
@@ -280,6 +262,7 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
   }
 
   void _addPost() async {
+    //Refatorar para o método ficar em PostModel e não aqui
     var url = PostModel.getUrlSalvarPost();
     double valorLatitude = 0;
     await localizacao.getLatitudeAtual()
@@ -303,20 +286,21 @@ class _CadastroPostAvistadoState extends State<CadastroPostAvistado> {
         body: jsonEncode(<String, dynamic>{
           if (outrasinformacoesController.text.isNotEmpty)
             "outrasInformacoes": outrasinformacoesController.text,
-          //ajustar quando pegar latitude
+          if (orientacoesController.text.isNotEmpty)
+            "orientacoesGerais": orientacoesController.text,
+          if (recompensaController.text.isNotEmpty)
+            "recompensa": int.parse(recompensaController.text),
           "latitude": valorLatitude,
-          //ajustar quando pegar longitude
           "longitude": valorLongitude,
+          if (nomeController.text.isNotEmpty) "nomeAnimal": nomeController.text,
           "coleira": valorColeiraMarcado,
-          "larTemporario": valorLarTemporario,
           if (valorEspecieSelecionado != null)
             "especieAnimal": {"id": int.parse(valorEspecieSelecionado!)},
           if (valorRacaSelecionado != null)
             "racaAnimal": {"id": int.parse(valorRacaSelecionado!)},
           "coresAnimal": cores,
           if (valorSexoMarcado.isNotEmpty) "sexoAnimal": valorSexoMarcado,
-          "tipoPost": "ANIMAL_AVISTADO",
-          //ajustar quando pegar usuario
+          "tipoPost": "ANIMAL_PERDIDO",
           "usuario": usuarioLogado,
         }));
 

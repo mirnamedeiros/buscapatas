@@ -31,6 +31,7 @@ class _CadastroUsuarioState extends State<CadastroUsuario> {
       appBar: AppBar(
           title: const Text("Cadastro de Usuário"),
           centerTitle: true,
+          foregroundColor: Colors.white,
           backgroundColor: estilo.corprimaria),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(30.0, 50, 30.0, 10.0),
@@ -85,7 +86,8 @@ class _CadastroUsuarioState extends State<CadastroUsuario> {
   }
 
   Future<bool> _verificarEmailJaCadastrado() async {
-    var url = "http://localhost:8080/findbyemail?email=${emailController.text}";
+    //Refatorar para o método ficar em UsuarioModel e não aqui
+    var url = UsuarioModel.getUrlFindByEmail(emailController.text);
     //http.Response response = await http.get(Uri.parse(url));
 
     var response = await http.get(
@@ -126,7 +128,9 @@ class _CadastroUsuarioState extends State<CadastroUsuario> {
 
   void _addUsuario(String nome, String email, String senha, String telefone,
       BuildContext context) async {
-    var url = "http://localhost:8080/users";
+
+        //Refatorar para o método ficar em UsuarioModel e não aqui
+        var url = UsuarioModel.getUrlSalvarUsuario();
 
     var response = await http.post(
       Uri.parse(url),

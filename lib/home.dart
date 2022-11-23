@@ -1,14 +1,20 @@
 import 'package:buscapatas/cadastros/cadastro-post-avistado.dart';
+import 'package:buscapatas/cadastros/cadastro-post-perdido.dart';
+import 'package:buscapatas/components/animal_card.dart';
 import 'package:buscapatas/visualizacoes/info-post-avistado.dart';
+import 'package:buscapatas/visualizacoes/info-post-perdido.dart';
+import 'package:buscapatas/model/PostModel.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:buscapatas/publico/login.dart';
-import 'package:buscapatas/cadastros/cadastro-post.dart';
-import 'package:buscapatas/perfil-usuario.dart';
 import 'package:flutter_session/flutter_session.dart';
+import 'package:buscapatas/utils/localizacao.dart' as localizacao;
 import 'package:buscapatas/model/UsuarioModel.dart';
 import 'package:buscapatas/componentes-interface/estilo.dart' as estilo;
+import 'package:buscapatas/components/navbar.dart';
+import 'dart:math';
 
-//OBS: Essa página é temporária e está simulando a página inicial
 class Home extends StatefulWidget {
   bool autorizado;
   Home(bool usuario, {super.key, required this.title})
@@ -21,9 +27,30 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  List<PostModel> postsProximos = [];
+  late GoogleMapController mapController;
+  //double? valorLatitude = 45.521563;
+  //double? valorLongitude = -122.677433;
+  double? valorLatitude = 0;
+  double? valorLongitude = 0;
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+
   @override
   void initState() {
-    //Para pegar o valor da sessao
+    getPostsAnimaisProximos();
+    //mockarUsuarioLogado();
+  }
+
+  void mockarUsuarioLogado() async {
+    //MOCKAR UM USUARIO LOGADO PARA QUANDO INICIA DIRETO PELA MAIN
+    UsuarioModel usuarioLogado = new UsuarioModel(
+        id: 1,
+        nome: "cleiane",
+        email: "cleiane@gmail.com",
+        senha: "abc",
+        telefone: "8498778787");
+
+    await FlutterSession().set("sessao_usuarioLogado", usuarioLogado);
   }
 
   @override
@@ -38,96 +65,191 @@ class _HomeState extends State<Home> {
       return Login(title: 'Busca Patas - Login');
     } else {
       return Scaffold(
+          resizeToAvoidBottomInset: false,
           backgroundColor: Colors.white,
-          appBar: AppBar(
-              title: const Text("Busca Patas"),
-              centerTitle: true,
-              backgroundColor: estilo.corprimaria),
+          bottomNavigationBar: const BuscapatasNavBar(selectedIndex: 0),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(30.0, 50, 30.0, 10.0),
-            child: Column(
-              children: <Widget>[
-                const Text("Página inicial ainda não implementada",
-                    style: TextStyle(color: estilo.corprimaria, fontSize: 20)),
-                Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 10.0)),
-                SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: const ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll<Color>(estilo.corprimaria),
-                      ),
-                      onPressed: () {
-                        _cadastrarAnimal();
-                      },
-                      child: const Text(
-                        "Cadastrar Animal",
-                        style: TextStyle(color: Colors.white, fontSize: 20.0),
-                      ),
-                    )),
-                Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 10.0)),
-                SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: const ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll<Color>(estilo.corprimaria),
-                      ),
-                      onPressed: () {
-                        _cadastrarAnimalAvistado();
-                      },
-                      child: const Text(
-                        "Cadastrar Animal Avistado",
-                        style: TextStyle(color: Colors.white, fontSize: 20.0),
-                      ),
-                    )),
-                Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 10.0)),
-                SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: const ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll<Color>(estilo.corprimaria),
-                      ),
-                      onPressed: () {
-                        _infoPostAvistado();
-                      },
-                      child: const Text(
-                        "Informação Post Avistado",
-                        style: TextStyle(color: Colors.white, fontSize: 20.0),
-                      ),
-                    )),
-                Padding(padding: const EdgeInsets.fromLTRB(0, 10, 0, 10.0)),
-                SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: const ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll<Color>(estilo.corprimaria),
-                      ),
-                      onPressed: () {
-                        _visualizarPerfil();
-                      },
-                      child: const Text(
-                        "Visualizar perfil",
-                        style: TextStyle(color: Colors.white, fontSize: 20.0),
-                      ),
-                    )),
-              ],
-            ),
-          ));
+              padding: EdgeInsets.fromLTRB(30.0, 10, 30.0, 20.0),
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 10.0),
+                  ),
+                  if (valorLatitude != 0 && valorLongitude != 0)
+                    Container(
+                      height: 300,
+                      child: GoogleMap(
+                          onMapCreated: _onMapCreated,
+                          markers: markers.values.toSet(),
+                          initialCameraPosition: CameraPosition(
+                              bearing: 192.8334901395799,
+                              target: LatLng(valorLatitude, valorLongitude),
+                              tilt: 59.440717697143555,
+                              zoom: 15)),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 10.0),
+                  ),
+                  SizedBox(
+                      height: 50,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                              flex: 5,
+                              child: ElevatedButton(
+                                  style: const ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStatePropertyAll<Color>(
+                                            estilo.coravistado),
+                                  ),
+                                  onPressed: () {
+                                    _cadastrarAnimalAvistado();
+                                  },
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Icon(Icons.add,
+                                              color: estilo.corpreto)),
+                                      Align(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            "Animal avistado",
+                                            style: TextStyle(
+                                                color: estilo.corpreto,
+                                                fontWeight: FontWeight
+                                                    .bold /*fontSize: 20.0*/
+                                                ),
+                                          )),
+                                    ],
+                                  ))),
+                          Expanded(
+                              flex: 1,
+                              child: Padding(
+                                  padding: EdgeInsets.fromLTRB(0, 1, 0, 1))),
+                          Expanded(
+                              flex: 5,
+                              child: ElevatedButton(
+                                  style: const ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStatePropertyAll<Color>(
+                                            estilo.corperdido),
+                                  ),
+                                  onPressed: () {
+                                    _cadastrarAnimalPerdido();
+                                  },
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      Align(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            "Animal perdido",
+                                            style: TextStyle(
+                                                color: estilo.corpreto,
+                                                fontWeight: FontWeight
+                                                    .bold /*fontSize: 20.0*/
+                                                ),
+                                          )),
+                                      Align(
+                                          alignment: Alignment.center,
+                                          child: Icon(Icons.add,
+                                              color: estilo.corpreto))
+                                    ],
+                                  ))),
+                        ],
+                      )),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10.0, 10, 10.0),
+                  ),
+                  Container(
+                    height: 500,
+                    child: ListView.builder(
+                        //shrinkWrap: true,
+                        itemCount: postsProximos.length,
+                        itemBuilder: (context, index) {
+                          PostModel? postAtual = null;
+                          if (postsProximos[index] != null) {
+                            postAtual = postsProximos[index];
+                          }
+
+                          //precisa desse GestureDetector e desse card?
+                          //não dava certo só colocar direto o elevatedButton?
+                          return GestureDetector(
+                              child: Card(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: BorderSide.none,
+                                ),
+                              ),
+                              onPressed: () {
+                                if (postAtual!.tipoPost == "ANIMAL_PERDIDO") {
+                                  _infoPostPerdido(postAtual);
+                                } else if (postAtual.tipoPost ==
+                                    "ANIMAL_AVISTADO") {
+                                  _infoPostAvistado(postAtual);
+                                }
+                              },
+                              child: AnimalCard(post: postAtual),
+                            ),
+                          ));
+                        }),
+                  )
+                ],
+              )));
     }
   }
 
-  void _cadastrarAnimal() {
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+
+    for (var post in postsProximos) {
+      String tipo ="";
+      var funcao;
+      if(post.tipoPost=="ANIMAL_PERDIDO"){
+        tipo = "perdido";
+        funcao = _infoPostPerdido;
+      }else{
+        tipo = "avistado";
+        funcao = _infoPostAvistado;
+      }
+      final marker = Marker(
+        onTap: () => funcao(post), 
+        markerId: MarkerId(post.id.toString()),
+        position: LatLng(post.latitude, post.longitude),
+        // icon: BitmapDescriptor.,
+        infoWindow: InfoWindow(
+          title: "",
+          snippet: "${post.especieAnimal!.nome} ${tipo}",
+        ),
+      );
+
+      markers[MarkerId(post.id.toString())] = marker;
+    }
+
+    setState(() {
+    });
+  }
+
+  void _cadastrarAnimalPerdido() {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => CadastroPost(title: "Cadastrar Animal")),
+          builder: (context) =>
+              CadastroPostPerdido(title: "Cadastrar Animal Perdido")),
     );
   }
 
@@ -140,19 +262,49 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void _infoPostAvistado() {
+  void _infoPostPerdido(PostModel? postAtual) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => InfoPostAvistado(title: "Animal Avistado")),
+      MaterialPageRoute(builder: (context) => InfoPostPerdido(post: postAtual)),
     );
   }
 
-  void _visualizarPerfil() {
+  void _infoPostAvistado(PostModel? postAtual) {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => VisualizarPerfil(title: "Perfil")),
+          builder: (context) =>
+              InfoPostAvistado(title: "Animal Avistado", post: postAtual)),
     );
+  }
+
+  void getPostsAnimaisProximos() async {
+    List<PostModel> posts = await PostModel.getPostsAnimaisProximos();
+    await carregarLocalizacao();
+    List<PostModel> postsProximosTemp = [];
+
+    double distancia = 0;
+    for (var post in posts) {
+      distancia = localizacao.calcularDistancia(
+          valorLatitude, valorLongitude, post.latitude, post.longitude);
+      if (distancia < 5) {
+        postsProximosTemp.add(post);
+      }
+    }
+
+    setState(() {
+      postsProximos = postsProximosTemp;
+    });
+  }
+
+  Future<void> carregarLocalizacao() async {
+    await localizacao.getLatitudeAtual().then((value) => valorLatitude = value);
+
+    await localizacao
+        .getLongitudeAtual()
+        .then((value) => valorLongitude = value);
+
+    //Necessário para recarregar a página após ter pegado o valor de usuarioLogado
+    setState(() {});
   }
 }

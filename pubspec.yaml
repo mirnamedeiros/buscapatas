@@ -33,12 +33,24 @@ dependencies:
     sdk: flutter
   http: ^0.13.5
   flutter_session: ^0.1.1
+  google_maps_flutter:
+  google_maps_flutter_web: ^0.1.0+8
 
   google_sign_in: ^5.0.0
 
+  # generate specific colors
+  material_color_generator: ^1.1.0
+
+  # persist locally data
+  shared_preferences: ^0.5.8
+
+  # validate form fields
+  form_validator: ^1.0.3
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+  pin_code_fields: ^7.4.0
+  geolocator:
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +80,9 @@ flutter:
     - imagens/entrar-com-google.png
     - imagens/animal.jpg
     - imagens/homem.jpg
+    - imagens/salsicha.jpg
+    - imagens/br.jpg
+    - imagens/mapa_holder.PNG
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

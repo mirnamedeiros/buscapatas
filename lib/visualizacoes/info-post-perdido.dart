@@ -1,31 +1,32 @@
+import 'package:buscapatas/cadastros/cadastro-notificacao-avistado.dart';
 import 'package:buscapatas/model/PostModel.dart';
 import 'package:buscapatas/model/UsuarioModel.dart';
 import 'package:buscapatas/visualizacoes/contato.dart';
-import 'package:flutter/material.dart';
 import 'package:buscapatas/utils/localizacao.dart' as localizacao;
+import 'package:flutter/material.dart';
+import 'package:buscapatas/listagens/lista-notificacoes-avistado.dart';
 import 'package:buscapatas/componentes-interface/estilo.dart' as estilo;
 import 'package:buscapatas/utils/usuario_logado.dart' as usuarioSessao;
 
-class InfoPostAvistado extends StatefulWidget {
-  InfoPostAvistado({title, required post}) {
+class InfoPostPerdido extends StatefulWidget {
+  InfoPostPerdido({title, required post}) {
     super.key;
-    this.title = "Animal avistado";
+    this.title = "Animal Perdido";
     this.post = post;
   }
 
-  String title = "";
   PostModel post = new PostModel();
+  String title = "";
 
   @override
-  State<InfoPostAvistado> createState() => _InfoPostAvistadoState();
+  State<InfoPostPerdido> createState() => _InfoPostPerdidoState();
 }
 
-class _InfoPostAvistadoState extends State<InfoPostAvistado> {
+class _InfoPostPerdidoState extends State<InfoPostPerdido> {
   PostModel post = new PostModel();
 
   String coleira = "";
   String dataHora = "";
-  String larTemporario = "";
   String especieAnimal = "";
   String racaAnimal = "";
   String coresAnimal = "";
@@ -54,7 +55,7 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
         backgroundColor: Colors.white,
         appBar: AppBar(
             foregroundColor: Colors.white,
-            title: const Text("Animal Avistado",
+            title: const Text("Animal Perdido",
                 style: TextStyle(color: Colors.white)),
             centerTitle: true,
             backgroundColor: estilo.corprimaria),
@@ -69,11 +70,21 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
                   backgroundImage: AssetImage('imagens/animal.jpg'),
                 ),
               ),
+              Padding(padding: const EdgeInsets.fromLTRB(0, 5.0, 0, 0)),
+              if (post.nomeAnimal != null && post.nomeAnimal!.isNotEmpty)
+                Center(
+                    child: Text(
+                  post.nomeAnimal!,
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 30,
+                      decorationThickness: 5.0),
+                )),
               Padding(padding: const EdgeInsets.fromLTRB(0, 20, 0, 5)),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
                   Widget>[
                 Container(
-                    color: estilo.coravistado,
+                    color: estilo.corperdido,
                     child: Center(
                         child: Padding(
                             padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
@@ -149,7 +160,7 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
                       ),
                       Padding(
                       padding: EdgeInsets.fromLTRB(0, 0, 15, 0)),
-                        Expanded(child:   
+                        Expanded(child:                     
                       Text("Cor do pelo: ${coresAnimal}",
                           style: TextStyle(color: Colors.black, fontSize: 20)))
                     ])),
@@ -157,16 +168,34 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
                     post.outrasInformacoes!.isNotEmpty)
                   Padding(
                       padding: EdgeInsets.fromLTRB(0, 15, 0, 5.0),
-                      child: Row(children: <Widget>[
+                      child: Row(                        
+                        children: <Widget>[
                         const Icon(
                           Icons.info,
+                          size: 20,
+                          color: estilo.corprimaria,
+                        ),
+                         Padding(
+                      padding: EdgeInsets.fromLTRB(0, 0, 15, 0)),
+                        Expanded(
+                          child:Text("Descrição: ${post.outrasInformacoes!}",
+                            style: TextStyle(color: Colors.black, fontSize: 20))),
+                        
+                      ])),
+                if (post.orientacoesGerais != null &&
+                    post.orientacoesGerais!.isNotEmpty)
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(0, 15, 0, 5.0),
+                      child: Row(children: <Widget>[
+                        const Icon(
+                          Icons.fact_check,
                           size: 20,
                           color: estilo.corprimaria,
                         ),
                         Padding(
                       padding: EdgeInsets.fromLTRB(0, 0, 15, 0)),
                         Expanded(child:   
-                        Text("Descrição: ${post.outrasInformacoes!}",
+                        Text("Orientações gerais: ${post.orientacoesGerais}",
                             style: TextStyle(color: Colors.black, fontSize: 20)))
                       ])),
                 Padding(
@@ -179,22 +208,23 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
                       ),
                       Padding(
                       padding: EdgeInsets.fromLTRB(0, 0, 15, 0)),
-                      Text( coleira,
+                      Text(coleira,
                           style: TextStyle(color: Colors.black, fontSize: 20))
                     ])),
-                Padding(
-                    padding: EdgeInsets.fromLTRB(0, 15, 0, 5.0),
-                    child: Row(children: <Widget>[
-                      const Icon(
-                        Icons.roofing,
-                        size: 20,
-                        color: estilo.corprimaria,
-                      ),
-                      Padding(
+                if (post.recompensa! > 0)
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(0, 15, 0, 5.0),
+                      child: Row(children: <Widget>[
+                        const Icon(
+                          Icons.payments,
+                          size: 20,
+                          color: estilo.corprimaria,
+                        ),
+                        Padding(
                       padding: EdgeInsets.fromLTRB(0, 0, 15, 0)),
-                      Text(larTemporario,
-                          style: TextStyle(color: Colors.black, fontSize: 20))
-                    ])),
+                        Text("Recompensa: R\$ ${post.recompensa}",
+                            style: TextStyle(color: Colors.black, fontSize: 20))
+                      ])),
               ]),
               if (usuarioLogado.id != post.usuario!.id)
                 Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 20)),
@@ -233,6 +263,47 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
                     ),
                   ],
                 ),
+              if (usuarioLogado.id != post.usuario!.id)
+                Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 10)),
+              if (usuarioLogado.id != post.usuario!.id)
+                Center(
+                    child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(estilo.corprimaria),
+                              shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(0)))),
+                          onPressed: () {
+                            _registrarAvistamento(post.id!);
+                          },
+                          child: const Text("Registrar avistamento",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20)),
+                        ))),
+              Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 30)),
+              if (usuarioLogado.id == post.usuario!.id)
+                Center(
+                    child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(estilo.corprimaria),
+                              shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(0)))),
+                          onPressed: () {
+                            _listaNotificacaoAvistado(post.id!);
+                          },
+                          child: const Text("Ver notificacões",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20)),
+                        ))),
               Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 30)),
             ],
           ),
@@ -242,7 +313,6 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
   void formatarDados() async{
     await localizacao.calcularDistanciaPosicaoAtual(post.latitude, post.longitude)
         .then((value) => distancia = value);
-
     setState(() {
       if (post.especieAnimal?.getNome() != null) {
         especieAnimal = post.especieAnimal!.getNome()!;
@@ -252,13 +322,6 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
       } else {
         coleira = "Não estava com coleira";
       }
-
-      if (post.larTemporario!) {
-        larTemporario = "Está em lar temporário";
-      } else {
-        larTemporario = "Não está em lar temporário";
-      }
-
       dataHora =
           "${post.dataHora!.day.toString().padLeft(2, '0')}/${post.dataHora!.month.toString().padLeft(2, '0')}/${post.dataHora!.year.toString()} às ${post.dataHora!.hour.toString()}:${post.dataHora!.minute.toString()}";
 
@@ -280,5 +343,23 @@ class _InfoPostAvistadoState extends State<InfoPostAvistado> {
         coresAnimal = coresAnimal.substring(1);
       }
     });
+  }
+
+  void _registrarAvistamento(int postId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CadastroNotificacaoAvistado(
+              title: "Cadastrar Notificação", postId: postId)),
+    );
+  }
+
+  void _listaNotificacaoAvistado(int postId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ListaNotificoesAvistado(
+              title: "Listar Notificações", postId: postId)),
+    );
   }
 }
